@@ -218,7 +218,8 @@ class Heat_Flux_Graph(Frame):
         rightframe = Frame(self,height=50)
         rightframe.pack( side = RIGHT )
         
-        Label(rightframe,text = "Conductividade").pack(side="top")
+        labelConductability = ttk.Label(rightframe,text="Condutividade", style="BW.TLabel", width=30)
+        labelConductability.pack(side="top")
 
         self.stringConductivity = StringVar()	
         self.stringConductivity.trace("w",lambda name, index ,mode, sv=self.stringConductivity, :self.updateConductivity(sv))
