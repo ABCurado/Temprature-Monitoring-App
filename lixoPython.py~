@@ -1,0 +1,24 @@
+import cx_Oracle
+import datetime
+
+username = 'cdioil15_11'
+password = 'qwerty'
+server = 'gandalf.dei.isep.ipp.pt'
+service_name = 'pdborcl'
+con = cx_Oracle.connect(username+'/'+password+'@'+server+'/'+service_name)             
+print ("Connected to database, database version "+con.version)
+print (datetime.datetime.now())
+print (str(datetime.datetime.now()))
+cur = con.cursor()
+lastOutsideValue = str(3)
+lastCellValue = str(4)
+conString = 'INSERT INTO "CDIOIL15_11"."TEMPERATURE_DATA" (INSIDETEMPERATURE, OUTSIDETEMPERATURE, OCORRENCE_DATE) VALUES (\''+ lastOutsideValue+'\',\''+ lastCellValue+'\', TO_TIMESTAMP(\''+str(datetime.datetime.now())+'\', \'YYYY-MM-DD HH24:MI:SS.FF\''+'))'
+print (conString)
+cur.execute(conString)
+cur.commit()
+cur.execute('Select * From Temperature_data')
+for line in cur:
+	print(line)
+cur.close()	
+
+

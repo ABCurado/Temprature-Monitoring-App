@@ -1,11 +1,5 @@
 
 # coding: utf-8
-#To do
-# ASk professor for good python
-# Menu/Combo box for Cell
-# Menu/Combo box for Port
-# HeatFlux insert actions
-
 
 import matplotlib
 matplotlib.use("TkAgg")
@@ -14,13 +8,17 @@ from matplotlib.figure import Figure
 import matplotlib.animation as animation
 from matplotlib import style
 
+
 from tkinter import *
 from tkinter import ttk
 import pandas as pd
 import numpy as np
 import serial
 import time
+import datetime
 import os.path
+import cx_Oracle
+import threading
 from matplotlib import pyplot as plt
 
 #UI fonts
@@ -44,6 +42,14 @@ speed=9600
 tout=4 
 ser = serial.Serial(port, speed, timeout=tout)
 insideCellNumber = 1
+#Sets up data base connection 
+username = 'cdioil15_11'
+password = 'qwerty'
+server = 'gandalf.dei.isep.ipp.pt'
+service_name = 'pdborcl'
+con = cx_Oracle.connect(username+'/'+password+'@'+server+'/'+service_name)             
+print ("Connected to database, database version "+con.version)
+
 
 #To change the serial port
 def changePort():
@@ -135,9 +141,17 @@ def animateHeatFlux(i):
     title = "Heat Flux"
     heatFluxPlot.set_title(title)
 
-
-
-
+def saveValues():
+    lastOutsideValue = str(outsideValues[-1])
+    lastCellValue = str(outsideValues[-1])
+    date = str(datetime.datetime.now())
+    conString = 'INSERT INTO "CDIOIL15_11"."TEMPERATURE_DATA" (INSIDETEMPERATURE, OUTSIDETEMPERATURE, OCORRENCE_DATE) VALUES (\''+ lastOutsideValue+'\',\''+ lastCellValue+'\', TO_TIMESTAMP(\''+date+'\', \'YYYY-MM-DD HH24:MI:SS.FF\''+'))'
+    cur.execute(conString)
+    con.commit()
+    cur.close()
+    print("Values: Outside temprature-"+lastOutsideValue+"  Cell Temprature-"+lastCellValue+" Saved to database -"+ date)
+    time.sleep(5)
+    saveValues()
 
 
 class temperatureMonitoring(Tk):
@@ -336,5 +350,8 @@ if __name__ == "__main__":
     app.geometry("1000x600")
     ani = animation.FuncAnimation(temperatureFigure, animateOutsideTemp, interval=500)
     heatFluxAni = animation.FuncAnimation(heatFluxFigure, animateHeatFlux, interval=500)
+    t = threading.Thread(target=saveValues)
+    t.daemon = True  # thread dies when main thread (only non-daemon thread) exits.
+    t.start()
     app.mainloop()
 
